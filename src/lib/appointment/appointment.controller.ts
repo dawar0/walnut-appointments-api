@@ -43,7 +43,7 @@ export class AppointmentsController {
   })
   findAll(
     @Query('date') date?: Date,
-    @Query('past') past?: 'true' | 'false',
+    @Query('past') past?: boolean,
     @Query('name') name?: string,
     @Query('age') age?: number,
   ) {

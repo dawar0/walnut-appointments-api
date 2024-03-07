@@ -23,7 +23,7 @@ export class SlotsController {
     name: 'onDate',
     required: false,
     type: Date,
-    description: 'Date to filter slots. Format: MM/DD/YYYY.',
+    description: 'Date to filter slots.',
   })
   @ApiQuery({ name: 'booked', required: false, type: Boolean })
   @ApiQuery({

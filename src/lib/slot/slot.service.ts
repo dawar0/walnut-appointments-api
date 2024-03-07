@@ -68,6 +68,7 @@ export class SlotsService {
     // If date is provided, return slots for that date
     let gtDate = moment(date);
     let lsDate = moment(date);
+    gtDate.subtract(1, 'days');
     lsDate.add(1, 'days');
 
     if (!gtDate.isValid()) {
@@ -78,8 +79,8 @@ export class SlotsService {
         AND: [
           {
             dateFrom: {
-              gte: gtDate.toDate(),
-              lt: lsDate.toDate(),
+              gt: gtDate.endOf('day').toDate(),
+              lt: lsDate.startOf('day').toDate(),
             },
           },
           {

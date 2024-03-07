@@ -15,7 +15,7 @@ export class AppointmentsService {
     age,
   }: {
     date?: Date;
-    past?: 'true' | 'false';
+    past?: boolean;
     name?: string;
     age?: number;
   }) {
@@ -25,7 +25,7 @@ export class AppointmentsService {
         where: {
           name: name ? { contains: name } : undefined,
           age: age ? { equals: age } : undefined,
-          slot: past === 'true' ? {} : { dateFrom: { gte: new Date() } },
+          slot: past ? {} : { dateFrom: { gte: new Date() } },
         },
         include: {
           slot: true,
@@ -36,6 +36,7 @@ export class AppointmentsService {
     // If date is provided, return appointments for that date
     let gtDate = moment(date);
     let lsDate = moment(date);
+    gtDate.subtract(1, 'days');
     lsDate.add(1, 'days');
     return await this.prismaService.appointment.findMany({
       where: {
@@ -43,8 +44,8 @@ export class AppointmentsService {
         age: age ? { equals: age } : undefined,
         slot: {
           dateFrom: {
-            gte: gtDate.toDate(),
-            lt: lsDate.toDate(),
+            gt: gtDate.endOf('day').toDate(),
+            lt: lsDate.startOf('day').toDate(),
           },
         },
       },

@@ -23,7 +23,7 @@ export class LangchainService {
 
   async getExecutor(memory: BufferMemory) {
     const llm = new ChatOpenAI({
-      modelName: 'gpt-4',
+      modelName: 'gpt-4-turbo-preview',
       temperature: 0,
       openAIApiKey: process.env.OPENAI_API_KEY,
     });
@@ -32,7 +32,7 @@ export class LangchainService {
       new DynamicStructuredTool({
         name: 'getSlots',
         description:
-          'Call this tool to get the available slots for booking appointments. You can filter the slots by date, booked, and past.',
+          'Call this tool to get the available slots for booking appointments. You can filter the slots by date, booked, and past. Date should be formatted as MM/DD/YYYY. Booked and past are optional and should be formatted as boolean. If booked is true, it will return the booked slots. If past is true, it will return the past slots. If both are true, it will return both booked and past slots. If both are false, it will return the available slots. If both are not provided, it will return the available slots.',
         schema: z.object({
           date: z.string().optional().describe('The date to get slots for'),
           booked: z
@@ -71,7 +71,7 @@ export class LangchainService {
     const prompt = ChatPromptTemplate.fromMessages([
       [
         'system',
-        "You are an assitant at Dr. Smith's clinic. You can book appointments and get available slots. ",
+        "You are an assitant at Dr. Smith's clinic. You can book appointments and get available slots. You have access to the following tools: getSlots, bookAppointment, getToday. All input dates should be formatted as MM/DD/YYYY.",
       ],
       ['system', '{chat_history}'],
       ['human', '{input}'],
@@ -88,7 +88,6 @@ export class LangchainService {
     return new AgentExecutor({
       agent: agent,
       tools,
-      verbose: true,
       memory,
     });
   }
