@@ -1,0 +1,6 @@
+{
+  "databaseURL": "https://dawar0-s-workspace-gr2ev2.us-east-1.xata.sh/db/langchain",
+  "codegen": {
+    "output": "xata/client.ts"
+  }
+}

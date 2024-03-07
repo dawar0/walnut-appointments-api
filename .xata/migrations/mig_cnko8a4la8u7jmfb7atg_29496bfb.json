@@ -1,0 +1,11 @@
+{
+  "id": "mig_cnko8a4la8u7jmfb7atg",
+  "checksum": "1:29496bfba5b337371bac1b8ba11839976b9b10e328783307d6c9f2ea0a64798d",
+  "operations": [
+    {
+      "addTable": {
+        "table": "messages"
+      }
+    }
+  ]
+}
