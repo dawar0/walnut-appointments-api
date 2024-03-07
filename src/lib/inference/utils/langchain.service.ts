@@ -1,10 +1,5 @@
 import { ChatOpenAI } from '@langchain/openai';
-import {
-  AgentExecutor,
-  createOpenAIFunctionsAgent,
-  createReactAgent,
-} from 'langchain/agents';
-import { pull } from 'langchain/hub';
+import { AgentExecutor, createOpenAIFunctionsAgent } from 'langchain/agents';
 import { BufferMemory } from 'langchain/memory';
 import { XataChatMessageHistory } from '@langchain/community/stores/message/xata';
 import { getXataClient } from 'src/xata/client';
@@ -12,13 +7,11 @@ import { DynamicTool, DynamicStructuredTool } from '@langchain/core/tools';
 import { Injectable } from '@nestjs/common';
 import { AppointmentsService } from 'src/lib/appointment';
 import { SlotsService } from 'src/lib/slot';
-import { BookAppointmentSchema } from 'src/lib/appointment/dto/book-appointment-dto';
-import { PromptTemplate } from '@langchain/core/prompts';
 import {
   ChatPromptTemplate,
   MessagesPlaceholder,
 } from '@langchain/core/prompts';
-
+import { randomUUID } from 'crypto';
 import { z } from 'zod';
 
 @Injectable()
@@ -55,7 +48,7 @@ export class LangchainService {
       new DynamicStructuredTool({
         name: 'bookAppointment',
         description:
-          'Book appointment with slotId (it should be a formatted as a number), name(it should be formatted as string) and age(it should be formatted   as a number)',
+          "Book appointment with slotId (it should be a formatted as a number), name(it should be formatted as string) and age(it should be formatted as a number). Don't ask for slotId from the user, you can get it from the getSlots tool.",
         schema: z.object({
           slotId: z.number().describe('The slot id'),
           name: z
@@ -65,13 +58,8 @@ export class LangchainService {
             .number()
             .describe('The age of the person to book the appointment for'),
         }),
-        func: async (args) => {
-          console.log(args);
-
-          return JSON.stringify(
-            await this.appointmentsService.bookAppointment(args),
-          );
-        },
+        func: async (args) =>
+          JSON.stringify(await this.appointmentsService.bookAppointment(args)),
       }),
       new DynamicTool({
         name: 'getToday',
@@ -81,7 +69,10 @@ export class LangchainService {
     ];
 
     const prompt = ChatPromptTemplate.fromMessages([
-      ['system', 'You are very powerful assistant'],
+      [
+        'system',
+        "You are an assitant at Dr. Smith's clinic. You can book appointments and get available slots. ",
+      ],
       ['system', '{chat_history}'],
       ['human', '{input}'],
 
@@ -102,6 +93,23 @@ export class LangchainService {
     });
   }
 
+  getHistory(sessionId: string) {
+    return new XataChatMessageHistory({
+      table: 'messages',
+      sessionId: sessionId,
+      client: getXataClient(),
+      apiKey: process.env.XATA_API_KEY,
+    });
+  }
+
+  getMemory(sessionId: string) {
+    const history = this.getHistory(sessionId);
+    return new BufferMemory({
+      chatHistory: history,
+      outputKey: 'output',
+      inputKey: 'input',
+    });
+  }
   async getInference({
     query,
     sessionId,
@@ -109,30 +117,20 @@ export class LangchainService {
     query: string;
     sessionId: string;
   }) {
-    const session = sessionId ? sessionId : crypto.randomUUID();
-    const history = new XataChatMessageHistory({
-      table: 'messages',
-      sessionId: session,
-      client: getXataClient(),
-      apiKey: process.env.XATA_API_KEY,
-    });
-    const memory = new BufferMemory({
-      chatHistory: history,
-      outputKey: 'output',
-      inputKey: 'input',
-    });
-    const inputs = {
-      input: query,
-    };
+    const session = sessionId ? sessionId : randomUUID();
 
+    const memory = this.getMemory(session);
+    const history = this.getHistory(session);
     const executor = await this.getExecutor(memory);
+
     const result = await executor.invoke({
-      input: inputs.input,
+      input: query,
       chat_history: await memory.loadMemoryVariables({}),
     });
 
     await history.addUserMessage(query);
     await history.addAIMessage(result.output);
+
     return {
       result: result.output,
       sessionId: session,
