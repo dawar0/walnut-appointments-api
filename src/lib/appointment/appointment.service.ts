@@ -1,12 +1,12 @@
 import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService, Prisma } from '@walnut/client';
+import { DBService, Prisma } from '@walnut/client';
 import { BookAppointmentDto } from './dto/book-appointment-dto';
 import { UpdateAppointmentDto } from './dto/update-appointment-dto';
 import * as moment from 'moment';
 
 @Injectable()
 export class AppointmentsService {
-  constructor(private prismaService: PrismaService) {}
+  constructor(private prismaService: DBService) {}
 
   async findAppointments({
     date,

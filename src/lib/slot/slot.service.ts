@@ -1,12 +1,12 @@
 import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '@walnut/client';
+import { DBService } from '@walnut/client';
 import { CreateSlotDto } from './dto/create-slot-dto';
 import * as moment from 'moment';
 import { equal } from 'assert';
 
 @Injectable()
 export class SlotsService {
-  constructor(private prismaService: PrismaService) {}
+  constructor(private prismaService: DBService) {}
 
   async createSlot(data: CreateSlotDto) {
     // If there is a slot that overlaps with the new slot, return error

@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ClientModule } from '@walnut/client';
+import { DBModule } from '@walnut/client';
 import { SlotsService } from './slot.service';
 import { SlotsController } from './slot.controller';
 import { AppointmentsService } from '../appointment/appointment.service';
@@ -7,6 +7,6 @@ import { AppointmentsService } from '../appointment/appointment.service';
   controllers: [SlotsController],
   providers: [SlotsService, AppointmentsService],
   exports: [SlotsService],
-  imports: [ClientModule],
+  imports: [DBModule],
 })
 export class SlotsModule {}

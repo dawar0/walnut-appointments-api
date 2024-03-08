@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ClientModule } from '@walnut/client';
+import { DBModule } from '@walnut/client';
 import { InferenceService } from './inference.service';
 import { InferenceController } from './inference.controller';
 import { AppointmentsModule } from '../appointment';
@@ -9,6 +9,6 @@ import { LangchainService } from './utils/langchain.service';
   controllers: [InferenceController],
   providers: [InferenceService, LangchainService],
   exports: [InferenceService, LangchainService],
-  imports: [ClientModule, AppointmentsModule, SlotsModule],
+  imports: [DBModule, AppointmentsModule, SlotsModule],
 })
 export class InferenceModule {}

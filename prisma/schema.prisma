@@ -21,7 +21,6 @@ model Appointment {
   id   Int    @id @default(autoincrement())
   name String
   age  Int
-
   slot Slot?
 }
 

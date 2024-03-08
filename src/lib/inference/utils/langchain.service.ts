@@ -33,7 +33,7 @@ export class LangchainService {
       new DynamicStructuredTool({
         name: 'getSlots',
         description:
-          'Call this tool to get the available slots for booking appointments. You can filter the slots by date, booked, and past. Date should be formatted as MM/DD/YYYY. Booked and past are optional and should be formatted as boolean. If booked is true, it will return the booked slots. If past is true, it will return the past slots. If both are true, it will return both booked and past slots. If both are false, it will return the available slots. If both are not provided, it will return the available slots.',
+          'Call this tool to get the available slots for booking appointments. You can filter the slots by date, booked, and past. Date should be formatted as ISO 8601. Booked and past are optional and should be formatted as boolean. If booked is true, it will return the booked slots. If past is true, it will return the past slots. If both are true, it will return both booked and past slots. If both are false, it will return the available slots. If both are not provided, it will return the available slots.',
         schema: z.object({
           date: z.string().optional().describe('The date to get slots for'),
           booked: z
@@ -49,7 +49,7 @@ export class LangchainService {
       new DynamicStructuredTool({
         name: 'bookAppointment',
         description:
-          "Book appointment with slotId (it should be a formatted as a number), name(it should be formatted as string) and age(it should be formatted as a number). Don't ask for slotId from the user, you can get it from the getSlots tool.",
+          "Book appointment after confirming the date and time of the slot with the user. The params are: slotId (it should be a formatted as a number), name(it should be formatted as string) and age(it should be formatted as a number). Don't ask for slotId from the user, you can get it from the getSlots tool.",
         schema: z.object({
           slotId: z.number().describe('The slot id'),
           name: z
@@ -63,11 +63,11 @@ export class LangchainService {
           JSON.stringify(await this.appointmentsService.bookAppointment(args)),
       }),
       new DynamicStructuredTool({
-        name: 'getAppointment',
-        description: 'Get appointment by name, date and age',
+        name: 'getAppointments',
+        description: 'Get list of appointments by name, date and age',
         schema: z.object({
           name: z.string().describe('The name of the person'),
-          date: z.string().datetime().describe('The date of the appointment'),
+          date: z.string().describe('The date of the appointment'),
           age: z.number().describe('The age of the person'),
         }),
         func: async (args) =>
@@ -83,13 +83,24 @@ export class LangchainService {
       new DynamicStructuredTool({
         name: 'updateAppointment',
         description:
-          "Update appointment. You can change the slot of the appointment. You can also change the name and age of the person. The date should be formatted as MM/DD/YYYY. The slotId should be a number. If you don't know the slotId use getSlots tool The name should be a string. The age should be a number.",
+          "Update appointment after confirming the date and time of the slot with the user. You can change the slot of the appointment. You can also change the name and age of the person. The date should be formatted as ISO 8601. The slotId should be a number. If you don't know the slotId use getSlots tool The name should be a string. The age should be a number.",
         schema: UpdateAppointmentSchema.extend({
           id: z.number().describe('The id of the appointment'),
         }),
         func: async (args) =>
           JSON.stringify(
             await this.appointmentsService.updateAppointment(args.id, args),
+          ),
+      }),
+      new DynamicStructuredTool({
+        name: 'cancelAppointment',
+        description: 'Cancel appointment by id',
+        schema: z.object({
+          id: z.number().describe('The id of the appointment'),
+        }),
+        func: async (args) =>
+          JSON.stringify(
+            await this.appointmentsService.cancelAppointment(args.id),
           ),
       }),
 
@@ -103,7 +114,7 @@ export class LangchainService {
     const prompt = ChatPromptTemplate.fromMessages([
       [
         'system',
-        "You are an assitant at Dr. Smith's clinic. You can book appointments and get available slots. You have access to the following tools: getSlots, bookAppointment, getToday, updateAppointment. All input dates should be formatted as YYYY-MM-DD. Try to be as consise as possible",
+        `You are an assitant at Dr. Smith's clinic. You can book appointments and get available slots. You have access to the following tools: getSlots, bookAppointment, getToday, updateAppointment. Keep it short and simple. Today's date is ${new Date().toLocaleDateString()}.`,
       ],
       ['system', '{chat_history}'],
       ['human', '{input}'],
@@ -156,7 +167,7 @@ export class LangchainService {
 
     const result = await executor.invoke({
       input: query,
-      chat_history: await memory.loadMemoryVariables({}),
+      chat_history: (await memory.loadMemoryVariables({})).history,
     });
 
     await history.addUserMessage(query);

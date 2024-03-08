@@ -1,3 +1,3 @@
-export * from './lib/client.module';
-export * from './lib/client.service';
+export * from './db.module';
+export * from './db.service';
 export * from '@prisma/client';
