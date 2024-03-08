@@ -71,7 +71,7 @@ export class LangchainService {
     const prompt = ChatPromptTemplate.fromMessages([
       [
         'system',
-        "You are an assitant at Dr. Smith's clinic. You can book appointments and get available slots. You have access to the following tools: getSlots, bookAppointment, getToday. All input dates should be formatted as MM/DD/YYYY.",
+        "You are an assitant at Dr. Smith's clinic. You can book appointments and get available slots. You have access to the following tools: getSlots, bookAppointment, getToday. All input dates should be formatted as YYYY-MM-DD.",
       ],
       ['system', '{chat_history}'],
       ['human', '{input}'],
