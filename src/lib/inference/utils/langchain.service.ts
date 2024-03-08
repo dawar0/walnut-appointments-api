@@ -94,7 +94,7 @@ export class LangchainService {
       }),
       new DynamicStructuredTool({
         name: 'cancelAppointment',
-        description: 'Cancel appointment by id',
+        description: 'Cancel appointment. You can cancel the appointment.',
         schema: z.object({
           id: z.number().describe('The id of the appointment'),
         }),
