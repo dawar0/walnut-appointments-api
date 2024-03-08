@@ -8,13 +8,13 @@ import * as moment from 'moment';
 export class AppointmentsService {
   constructor(private prismaService: PrismaService) {}
 
-  async findAll({
+  async findAppointments({
     date,
     past,
     name,
     age,
   }: {
-    date?: Date;
+    date?: string;
     past?: boolean;
     name?: string;
     age?: number;
@@ -77,7 +77,7 @@ export class AppointmentsService {
       },
     });
   }
-  async updateAppointment(id, data: UpdateAppointmentDto) {
+  async updateAppointment(id: number, data: UpdateAppointmentDto) {
     // check if appointment exists
     const appointment = await this.prismaService.appointment.findFirst({
       where: { id },
@@ -85,16 +85,27 @@ export class AppointmentsService {
     if (!appointment) {
       throw new HttpException('Appointment not found', 400);
     }
+
     return await this.prismaService.appointment.update({
       data: {
         slot: {
-          connect: { id: data.slotId },
+          connect: data.slotId ? { id: data.slotId } : undefined,
         },
+        name: data.name
+          ? {
+              set: data.name,
+            }
+          : undefined,
+        age: data.age
+          ? {
+              set: data.age,
+            }
+          : undefined,
       },
-      where: { id },
+      where: { id: appointment.id },
     });
   }
-  async cancelAppointment(id) {
+  async cancelAppointment(id: number) {
     // check if appointment exists
     const appointment = await this.prismaService.appointment.findFirst({
       where: { id },
@@ -103,8 +114,19 @@ export class AppointmentsService {
     if (!appointment) {
       throw new HttpException('Appointment not found', 400);
     }
-    return await this.prismaService.appointment.delete({
+
+    const updateSlot = this.prismaService.slot.update({
+      where: { appointmentId: id },
+      data: {
+        appointment: {
+          disconnect: true,
+        },
+      },
+    });
+    const deleteAppointment = this.prismaService.appointment.delete({
       where: { id },
     });
+
+    return this.prismaService.$transaction([updateSlot, deleteAppointment]);
   }
 }

@@ -3,9 +3,10 @@ import { createZodDto } from 'nestjs-zod';
 import { z } from 'nestjs-zod/z';
 
 const UpdateAppointmentSchema = z.object({
-  slotId: z.number(),
-  name: z.string(),
-  age: z.number(),
+  appointmentId: z.number(),
+  slotId: z.number().optional(),
+  name: z.string().optional(),
+  age: z.number().optional(),
 });
 export class UpdateAppointmentDto extends createZodDto(
   UpdateAppointmentSchema,

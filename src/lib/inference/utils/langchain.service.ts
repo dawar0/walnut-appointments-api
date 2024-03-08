@@ -13,6 +13,7 @@ import {
 } from '@langchain/core/prompts';
 import { randomUUID } from 'crypto';
 import { z } from 'zod';
+import { UpdateAppointmentSchema } from 'src/lib/appointment/dto/update-appointment-dto';
 
 @Injectable()
 export class LangchainService {
@@ -43,7 +44,7 @@ export class LangchainService {
         }),
 
         func: async (args) =>
-          JSON.stringify(await this.slotsService.findAll(args)),
+          JSON.stringify(await this.slotsService.findSlots(args)),
       }),
       new DynamicStructuredTool({
         name: 'bookAppointment',
@@ -61,6 +62,37 @@ export class LangchainService {
         func: async (args) =>
           JSON.stringify(await this.appointmentsService.bookAppointment(args)),
       }),
+      new DynamicStructuredTool({
+        name: 'getAppointment',
+        description: 'Get appointment by name, date and age',
+        schema: z.object({
+          name: z.string().describe('The name of the person'),
+          date: z.string().datetime().describe('The date of the appointment'),
+          age: z.number().describe('The age of the person'),
+        }),
+        func: async (args) =>
+          JSON.stringify(
+            await this.appointmentsService.findAppointments({
+              age: args.age,
+              date: args.date,
+              name: args.name,
+            }),
+          ),
+      }),
+
+      new DynamicStructuredTool({
+        name: 'updateAppointment',
+        description:
+          "Update appointment. You can change the slot of the appointment. You can also change the name and age of the person. The date should be formatted as MM/DD/YYYY. The slotId should be a number. If you don't know the slotId use getSlots tool The name should be a string. The age should be a number.",
+        schema: UpdateAppointmentSchema.extend({
+          id: z.number().describe('The id of the appointment'),
+        }),
+        func: async (args) =>
+          JSON.stringify(
+            await this.appointmentsService.updateAppointment(args.id, args),
+          ),
+      }),
+
       new DynamicTool({
         name: 'getToday',
         description: "Get today's date",
@@ -71,7 +103,7 @@ export class LangchainService {
     const prompt = ChatPromptTemplate.fromMessages([
       [
         'system',
-        "You are an assitant at Dr. Smith's clinic. You can book appointments and get available slots. You have access to the following tools: getSlots, bookAppointment, getToday. All input dates should be formatted as YYYY-MM-DD.",
+        "You are an assitant at Dr. Smith's clinic. You can book appointments and get available slots. You have access to the following tools: getSlots, bookAppointment, getToday, updateAppointment. All input dates should be formatted as YYYY-MM-DD. Try to be as consise as possible",
       ],
       ['system', '{chat_history}'],
       ['human', '{input}'],

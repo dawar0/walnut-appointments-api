@@ -46,7 +46,7 @@ export class SlotsService {
     });
   }
 
-  async findAll({
+  async findSlots({
     date,
     booked = false,
     past,

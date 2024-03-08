@@ -1,14 +1,16 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { SlotsService } from './slot.service';
 import {
+  ApiBody,
   ApiCreatedResponse,
   ApiOkResponse,
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
 import { Prisma } from '@walnut/client';
-import { CreateSlotDto } from './dto/create-slot-dto';
+import { CreateSlotDto, CreateSlotSchema } from './dto/create-slot-dto';
 import { SlotEntity } from './entities/slot.entity';
+import { zodToOpenAPI } from 'nestjs-zod';
 
 @Controller('slot')
 export class SlotsController {
@@ -37,7 +39,7 @@ export class SlotsController {
     @Query('booked') booked?: boolean,
     @Query('past') past?: boolean,
   ) {
-    return this.slotsService.findAll({
+    return this.slotsService.findSlots({
       date: onDate,
       booked,
       past,
@@ -45,6 +47,9 @@ export class SlotsController {
   }
 
   @Post()
+  @ApiBody({
+    schema: zodToOpenAPI(CreateSlotSchema),
+  })
   @ApiCreatedResponse({ type: SlotEntity, description: 'Create a new slot.' })
   createSlot(@Body() createSlotDto: CreateSlotDto) {
     return this.slotsService.createSlot(createSlotDto);
