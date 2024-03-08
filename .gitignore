@@ -33,7 +33,8 @@ build/config\.gypi
 
 
 .env
-
+/.vercel
+/.xata
 .npmrc
 pnpm-lock.yaml
 /dist
