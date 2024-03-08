@@ -49,7 +49,7 @@ export class LangchainService {
       new DynamicStructuredTool({
         name: 'bookAppointment',
         description:
-          "Book appointment after confirming the date and time of the slot with the user. The params are: slotId (it should be a formatted as a number), name(it should be formatted as string) and age(it should be formatted as a number). Don't ask for slotId from the user, you can get it from the getSlots tool.",
+          "Book appointment after getting the name and age and confirming the date and time of the slot. The params are: slotId (it should be a formatted as a number), name(it should be formatted as string) and age(it should be formatted as a number). Don't ask for slotId from the user, you can get it from the getSlots tool.",
         schema: z.object({
           slotId: z.number().describe('The slot id'),
           name: z
