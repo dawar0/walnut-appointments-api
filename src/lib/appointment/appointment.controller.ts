@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { AppointmentsService } from './appointment.service';
 import { ApiBody, ApiOkResponse, ApiQuery } from '@nestjs/swagger';
 import {
@@ -80,5 +88,14 @@ export class AppointmentsController {
       Number(id),
       updateAppointmentDto,
     );
+  }
+
+  @Delete(':id')
+  @ApiOkResponse({
+    description: 'Delete an appointment.',
+    type: AppointmentEntity,
+  })
+  deleteAppointment(@Param('id') id: string) {
+    return this.appointmentService.cancelAppointment(Number(id));
   }
 }

@@ -49,7 +49,7 @@ export class LangchainService {
       new DynamicStructuredTool({
         name: 'bookAppointment',
         description:
-          "Book appointment after getting the name and age and confirming the date and time of the slot. The params are: slotId (it should be a formatted as a number), name(it should be formatted as string) and age(it should be formatted as a number). Don't ask for slotId from the user, you can get it from the getSlots tool.",
+          "Book appointment. The params are: slotId (it should be a formatted as a number), name(it should be formatted as string) and age(it should be formatted as a number). Don't ask for slotId from the user, you can get it from the getSlots tool.",
         schema: z.object({
           slotId: z.number().describe('The slot id'),
           name: z
@@ -83,7 +83,7 @@ export class LangchainService {
       new DynamicStructuredTool({
         name: 'updateAppointment',
         description:
-          "Update appointment after confirming the date and time of the slot with the user. You can change the slot of the appointment. You can also change the name and age of the person. The date should be formatted as ISO 8601. The slotId should be a number. If you don't know the slotId use getSlots tool The name should be a string. The age should be a number.",
+          "Update appointment. You can change the slot of the appointment. You can also change the name and age of the person. The date should be formatted as ISO 8601. The slotId should be a number. If you don't know the slotId use getSlots tool The name should be a string. The age should be a number.",
         schema: UpdateAppointmentSchema.extend({
           id: z.number().describe('The id of the appointment'),
         }),
@@ -114,7 +114,7 @@ export class LangchainService {
     const prompt = ChatPromptTemplate.fromMessages([
       [
         'system',
-        `You are an assitant at Dr. Smith's clinic. You can book appointments and get available slots. You have access to the following tools: getSlots, bookAppointment, getToday, updateAppointment. Keep it short and simple. Today's date is ${new Date().toLocaleDateString()}.`,
+        `You are an assitant at Dr. Smith's clinic. You can book appointments and get available slots. You have access to the following tools: getSlots, bookAppointment, getToday, updateAppointment. Keep it short and simple. Before Booking or updating the appointment ask for name and age. Today's date is ${new Date().toLocaleDateString()}.`,
       ],
       ['system', '{chat_history}'],
       ['human', '{input}'],
